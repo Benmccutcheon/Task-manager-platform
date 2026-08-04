@@ -19,6 +19,12 @@ const priorityFilter = document.getElementById("priorityFilter");
 const categoryFilter = document.getElementById("categoryFilter");
 const themeToggle = document.getElementById("themeToggle");
 
+const MAX_VISIBLE_TASKS = 3;
+const viewAllModal = document.getElementById("viewAllModal");
+const closeViewAllBtn = document.getElementById("closeViewAllBtn");
+const viewAllTitle = document.getElementById("viewAllTitle");
+const viewAllList = document.getElementById("viewAllList");
+
 let draggedTaskId = null;
 const TASKS_STORAGE_KEY = "taskBoard.tasks.v1";
 const THEME_STORAGE_KEY = "taskBoard.theme.v1";
@@ -159,9 +165,50 @@ function closeModal() {
 	taskIdInput.value = "";
 }
 
+function formatStatusLabel(status) {
+    const labels = {
+        backlog: "Backlog",
+        todo: "To Do",
+        progress: "In Progress",
+        done: "Done"
+    };
+    return labels[status] || status;
+}
+
+function openViewAllModal(status, columnTasks) {
+    viewAllTitle.textContent = `${formatStatusLabel(status)} Tasks (${columnTasks.length})`;
+    viewAllList.innerHTML = "";
+
+    columnTasks.forEach((task) => {
+        const card = createTaskCard(task);
+        card.draggable = false;
+        viewAllList.appendChild(card);
+    });
+
+    attachCardActionEvents();
+    viewAllModal.classList.remove("hidden");
+}
+
+function closeViewAllModal() {
+    viewAllModal.classList.add("hidden");
+    viewAllList.innerHTML = "";
+}
+
 openModalBtn.addEventListener("click", () => openModal());
 closeModalBtn.addEventListener("click", closeModal);
 cancelBtn.addEventListener("click", closeModal);
+
+if (closeViewAllBtn) {
+	closeViewAllBtn.addEventListener("click", closeViewAllModal);
+}
+
+if (viewAllModal) {
+	viewAllModal.addEventListener("click", (e) => {
+		if (e.target === viewAllModal) {
+			closeViewAllModal();
+		}
+	});
+}
 
 taskModal.addEventListener("click", (e) => {
 	if (e.target === taskModal) {
@@ -333,9 +380,19 @@ function renderTasks() {
 			return;
 		}
 
-		columnTasks.forEach((task) => {
+		const visibleTasks = columnTasks.slice(0, MAX_VISIBLE_TASKS);
+
+		visibleTasks.forEach((task) => {
 			column.appendChild(createTaskCard(task));
 		});
+
+		if (columnTasks.length > MAX_VISIBLE_TASKS) {
+			const viewMoreBtn = document.createElement("button");
+			viewMoreBtn.className = "view-more-btn";
+			viewMoreBtn.textContent = `View more (${columnTasks.length - MAX_VISIBLE_TASKS})`;
+			viewMoreBtn.addEventListener("click", () => openViewAllModal(status, columnTasks));
+			column.appendChild(viewMoreBtn);
+		}
 	});
 
 	updateColumnCounts(filteredTasks);
