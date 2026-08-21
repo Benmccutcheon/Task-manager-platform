@@ -19,7 +19,7 @@ const priorityFilter = document.getElementById("priorityFilter");
 const categoryFilter = document.getElementById("categoryFilter");
 const themeToggle = document.getElementById("themeToggle");
 
-const MAX_VISIBLE_TASKS = 3;
+const MAX_VISIBLE_TASKS = 2;
 const viewAllModal = document.getElementById("viewAllModal");
 const closeViewAllBtn = document.getElementById("closeViewAllBtn");
 const viewAllTitle = document.getElementById("viewAllTitle");
